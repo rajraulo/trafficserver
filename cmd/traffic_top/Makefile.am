@@ -16,7 +16,6 @@
 #  limitations under the License.
 
 # We only build traffic_top if libcurses and libcurl are available.
-if BUILD_TRAFFIC_TOP
 
 AM_CPPFLAGS = \
   $(iocore_include_dirs) \
@@ -39,8 +38,6 @@ traffic_top_LDADD = \
   $(top_builddir)/lib/ts/libtsutil.la \
   @CURL_LIBS@ \
   @CURSES_LIBS@
-
-endif
 
 include $(top_srcdir)/build/tidy.mk
 
