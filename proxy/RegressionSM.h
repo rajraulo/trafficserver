@@ -27,6 +27,11 @@
 #include "I_EventSystem.h"
 #include "ts/Regression.h"
 #include "ts/DynArray.h"
+#include <vector>
+#include <ts/ink_memory.h>
+#include <iostream>
+
+//using namespace std;
 
 /*
   Regression Test Composition State Machine
@@ -42,7 +47,9 @@ struct RegressionSM : public Continuation {
   virtual RegressionSM *
   clone()
   {
-    return new RegressionSM(*this);
+    RegressionSM *sm = new RegressionSM(*this);
+    std::cout << "clone: " << sm << std::endl;
+    return sm;
   } // replace for run_xxx(int n,...);
 
   // public API
@@ -56,7 +63,8 @@ struct RegressionSM : public Continuation {
   RegressionSM *parent              = nullptr;
   int nwaiting                      = 0;
   int nchildren                     = 0;
-  DynArray<RegressionSM *> children = nullptr;
+  std::vector<std::unique_ptr<RegressionSM>> children;
+  //DynArray<RegressionSM *> children = nullptr;
   intptr_t n                        = 0;
   intptr_t ichild                   = 0;
   bool parallel                     = false;
@@ -72,6 +80,11 @@ struct RegressionSM : public Continuation {
   RegressionSM(RegressionTest *at = NULL) : t(at) { mutex = new_ProxyMutex(); }
 
   RegressionSM(const RegressionSM &);
+  ~RegressionSM() {
+    for(auto& i: children) {
+      std::cout << i.get() << std::endl;
+    }
+  }
 };
 
 RegressionSM *r_sequential(RegressionTest *t, int n, RegressionSM *sm);

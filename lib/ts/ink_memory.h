@@ -533,7 +533,6 @@ path_join(ats_scoped_str const &lhs, ats_scoped_str const &rhs)
 
   return x.release();
 }
-#endif /* __cplusplus */
 
 // This is in C++14 and should removed when we support it
 template <typename T, typename... Args>
@@ -543,4 +542,5 @@ make_unique(Args &&... args)
   return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
+#endif /* __cplusplus */
 #endif

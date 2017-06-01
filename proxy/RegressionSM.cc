@@ -23,8 +23,6 @@
 
 #include "P_EventSystem.h"
 #include "RegressionSM.h"
-#include <vector>
-#include <ts/ink_memory.h>
 
 #define REGRESSION_SM_RETRY (100 * HRTIME_MSECOND)
 
@@ -119,6 +117,8 @@ RegressionSM::regression_sm_start(int /* event ATS_UNUSED */, void * /* data ATS
 RegressionSM *
 r_sequential(RegressionTest *t, RegressionSM *sm, ...)
 {
+  std::cout << sm << std::endl;
+
   RegressionSM *new_sm = new RegressionSM(t);
   va_list ap;
   va_start(ap, sm);
@@ -128,7 +128,9 @@ r_sequential(RegressionTest *t, RegressionSM *sm, ...)
   new_sm->nchildren = 0;
   new_sm->nwaiting  = 0;
   while (nullptr != sm) {
-    new_sm->children(new_sm->nchildren++) = sm;
+    new_sm->children.emplace_back(sm);
+    //new_sm->children(new_sm->nchildren++) = sm;
+    new_sm->nchildren++;
     sm                                    = va_arg(ap, RegressionSM *);
   }
   new_sm->n = new_sm->nchildren;
@@ -139,12 +141,15 @@ r_sequential(RegressionTest *t, RegressionSM *sm, ...)
 RegressionSM *
 r_sequential(RegressionTest *t, int an, RegressionSM *sm)
 {
+  std::cout << sm << std::endl;
+
   RegressionSM *new_sm = new RegressionSM(t);
   new_sm->parallel     = false;
   new_sm->repeat       = true;
   new_sm->ichild       = 0;
   new_sm->nchildren    = 1;
-  new_sm->children(0)  = sm;
+  new_sm->children.emplace_back(sm);
+  //new_sm->children(0)  = sm;
   new_sm->nwaiting     = 0;
   new_sm->n            = an;
   return new_sm;
@@ -153,6 +158,7 @@ r_sequential(RegressionTest *t, int an, RegressionSM *sm)
 RegressionSM *
 r_parallel(RegressionTest *t, RegressionSM *sm, ...)
 {
+  std::cout << sm << std::endl;
   RegressionSM *new_sm = new RegressionSM(t);
   va_list ap;
   va_start(ap, sm);
@@ -162,7 +168,9 @@ r_parallel(RegressionTest *t, RegressionSM *sm, ...)
   new_sm->nchildren = 0;
   new_sm->nwaiting  = 0;
   while (sm) {
-    new_sm->children(new_sm->nchildren++) = sm;
+    //new_sm->children(new_sm->nchildren++) = sm;
+    new_sm->children.emplace_back(sm);
+    new_sm->nchildren++;
     sm                                    = va_arg(ap, RegressionSM *);
   }
   new_sm->n = new_sm->nchildren;
@@ -173,12 +181,15 @@ r_parallel(RegressionTest *t, RegressionSM *sm, ...)
 RegressionSM *
 r_parallel(RegressionTest *t, int an, RegressionSM *sm)
 {
+  std::cout << sm << std::endl;
+
   RegressionSM *new_sm = new RegressionSM(t);
   new_sm->parallel     = true;
   new_sm->repeat       = true;
   new_sm->ichild       = 0;
   new_sm->nchildren    = 1;
-  new_sm->children(0)  = sm;
+  new_sm->children.emplace_back(sm);
+  //new_sm->children(0)  = sm;
   new_sm->nwaiting     = 0;
   new_sm->n            = an;
   return new_sm;
@@ -196,12 +207,13 @@ RegressionSM::run()
     RegressionSM *x = nullptr;
     while (ichild < n) {
       if (!repeat) {
-        x = children[ichild];
+        x = children[ichild].get();
       } else {
         if (ichild != n - 1) {
-          x = children[(intptr_t)0]->clone();
+          x = children[0]->clone();
+          std::cout << "clone: " << x << std::endl;
         } else {
-          x = children[(intptr_t)0];
+          x = children[0].get();
         }
       }
       if (!ichild) {
@@ -236,8 +248,8 @@ RegressionSM::RegressionSM(const RegressionSM &ao) : Continuation(ao)
   nwaiting  = o.nwaiting;
   nchildren = o.nchildren;
 
-  for (intptr_t i = 0; i < nchildren; i++) {
-    children(i) = o.children[i]->clone();
+  for (int i = 0; i < nchildren; i++) {
+    children.emplace_back(o.children[i]->clone());
   }
 
   n              = o.n;
@@ -275,16 +287,10 @@ struct ReRegressionSM : public RegressionSM {
 
 REGRESSION_TEST(RegressionSM)(RegressionTest *t, int /* atype ATS_UNUSED */, int *pstatus)
 {
-  // create 8 state machines
-  std::vector<std::unique_ptr<ReRegressionSM>> state_machines;
-  for (auto i = 0; i < 8; i++) {
-    state_machines.push_back(make_unique<ReRegressionSM>(t));
-  }
-
   RegressionSM *top_sm = r_sequential(
-    t, r_parallel(t, state_machines[0].get(), state_machines[1].get(), nullptr),
-    r_sequential(t, state_machines[2].get(), state_machines[3].get(), nullptr), r_parallel(t, 3, state_machines[4].get()),
-    r_sequential(t, 3, state_machines[5].get()),
-    r_parallel(t, r_sequential(t, 2, state_machines[6].get()), r_parallel(t, 2, state_machines[7].get()), nullptr), nullptr);
+    t, r_parallel(t, new ReRegressionSM(t), new ReRegressionSM(t), nullptr),
+    r_sequential(t, new ReRegressionSM(t), new ReRegressionSM(t), nullptr), r_parallel(t, 3, new ReRegressionSM(t)),
+    r_sequential(t, 3, new ReRegressionSM(t)),
+    r_parallel(t, r_sequential(t, 2, new ReRegressionSM(t)), r_parallel(t, 2, new ReRegressionSM(t)), nullptr), nullptr);
   top_sm->run(pstatus);
 }
