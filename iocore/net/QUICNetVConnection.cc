@@ -414,6 +414,7 @@ QUICNetVConnection::state_handshake(int event, Event *data)
       this->_packet_write_ready = nullptr;
     }
     DebugQUICCon("_frame_send_queue.size(): %ld", _frame_send_queue.size());
+    ink_release_assert(this->_frame_send_queue.back().get() != nullptr);
     ink_release_assert(this->_frame_send_queue.front().get() != nullptr);
     error = this->_state_common_send_packet();
     break;
