@@ -289,7 +289,7 @@ QUICNetVConnection::_transmit_frame(QUICFrameUPtr frame)
     this->_frame_send_queue.push(std::move(frame));
     ink_release_assert(this->_frame_send_queue.front().get() != nullptr);
   }
-  Debug("bcall", "_frame_send_queue.size(): %ld", _frame_send_queue.size());
+  DebugQUICCon("_frame_send_queue.size(): %ld", _frame_send_queue.size());
 }
 
 void
@@ -414,7 +414,7 @@ QUICNetVConnection::state_handshake(int event, Event *data)
     if (this->_packet_write_ready == data) {
       this->_packet_write_ready = nullptr;
     }
-    Debug("bcall", "_frame_send_queue.size(): %ld", _frame_send_queue.size());
+    DebugQUICCon("_frame_send_queue.size(): %ld", _frame_send_queue.size());
     ink_release_assert(this->_frame_send_queue.front().get() != nullptr);
     error = this->_state_common_send_packet();
     break;
