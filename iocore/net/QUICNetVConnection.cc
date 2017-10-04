@@ -280,15 +280,14 @@ QUICNetVConnection::_transmit_frame(QUICFrameUPtr frame)
     // XXX: Stream 0 is exempt from the connection-level flow control window.
     if (stream_frame.stream_id() == STREAM_ID_FOR_HANDSHAKE) {
       this->_frame_send_queue.push(std::move(frame));
-      ink_release_assert(this->_frame_send_queue.front().get() != nullptr);
     } else {
       this->_stream_frame_send_queue.push(std::move(frame));
-      ink_release_assert(this->_frame_send_queue.front().get() != nullptr);
     }
   } else {
     this->_frame_send_queue.push(std::move(frame));
-    ink_release_assert(this->_frame_send_queue.front().get() != nullptr);
   }
+  ink_release_assert(this->_frame_send_queue.back().get() != nullptr);
+  ink_release_assert(this->_frame_send_queue.front().get() != nullptr);
   DebugQUICCon("_frame_send_queue.size(): %ld", _frame_send_queue.size());
 }
 
