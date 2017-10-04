@@ -280,12 +280,16 @@ QUICNetVConnection::_transmit_frame(QUICFrameUPtr frame)
     // XXX: Stream 0 is exempt from the connection-level flow control window.
     if (stream_frame.stream_id() == STREAM_ID_FOR_HANDSHAKE) {
       this->_frame_send_queue.push(std::move(frame));
+      ink_release_assert(this->_frame_send_queue.front().get() != nullptr);
     } else {
       this->_stream_frame_send_queue.push(std::move(frame));
+      ink_release_assert(this->_frame_send_queue.front().get() != nullptr);
     }
   } else {
     this->_frame_send_queue.push(std::move(frame));
+    ink_release_assert(this->_frame_send_queue.front().get() != nullptr);
   }
+  Debug("bcall", "_frame_send_queue.size(): %ld", _frame_send_queue.size());
 }
 
 void
@@ -410,6 +414,8 @@ QUICNetVConnection::state_handshake(int event, Event *data)
     if (this->_packet_write_ready == data) {
       this->_packet_write_ready = nullptr;
     }
+    Debug("bcall", "_frame_send_queue.size(): %ld", _frame_send_queue.size());
+    ink_release_assert(this->_frame_send_queue.front().get() != nullptr);
     error = this->_state_common_send_packet();
     break;
   }
@@ -704,6 +710,7 @@ QUICNetVConnection::_state_common_receive_packet()
 QUICErrorUPtr
 QUICNetVConnection::_state_common_send_packet()
 {
+  ink_release_assert(this->_frame_send_queue.front().get() != nullptr);
   this->_packetize_frames();
 
   QUICPacket *packet;
@@ -742,6 +749,7 @@ void
 QUICNetVConnection::_store_frame(ats_unique_buf &buf, size_t &len, bool &retransmittable, QUICPacketType &current_packet_type,
                                  QUICFrameUPtr frame)
 {
+  ink_release_assert(frame.get() != nullptr);
   uint32_t max_size = this->maximum_quic_packet_size();
 
   QUICPacketType previous_packet_type = current_packet_type;
@@ -791,6 +799,7 @@ QUICNetVConnection::_packetize_frames()
 
   while (this->_frame_send_queue.size() > 0) {
     frame = std::move(this->_frame_send_queue.front());
+    ink_release_assert(frame.get() != nullptr);
     this->_frame_send_queue.pop();
     this->_store_frame(buf, len, retransmittable, current_packet_type, std::move(frame));
   }
