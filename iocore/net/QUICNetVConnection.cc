@@ -801,6 +801,7 @@ QUICNetVConnection::_packetize_frames()
     frame = std::move(this->_frame_send_queue.front());
     ink_release_assert(frame.get() != nullptr);
     this->_frame_send_queue.pop();
+    DebugQUICCon("_frame_send_queue.size(): %ld", _frame_send_queue.size());
     this->_store_frame(buf, len, retransmittable, current_packet_type, std::move(frame));
   }
 
@@ -813,6 +814,7 @@ QUICNetVConnection::_packetize_frames()
 
     frame = std::move(this->_stream_frame_send_queue.front());
     this->_stream_frame_send_queue.pop();
+    DebugQUICCon("_frame_send_queue.size(): %ld", _frame_send_queue.size());
     this->_store_frame(buf, len, retransmittable, current_packet_type, std::move(frame));
     this->_stream_manager->add_total_offset_sent(frame_size);
   }
