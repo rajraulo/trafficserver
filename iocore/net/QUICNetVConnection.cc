@@ -298,7 +298,7 @@ QUICNetVConnection::transmit_frame(QUICFrameUPtr frame)
   this->_transmit_frame(std::move(frame));
   if (!this->_packet_write_ready) {
     DebugQUICCon("Schedule %s event", QUICDebugNames::quic_event(QUIC_EVENT_PACKET_WRITE_READY));
-    this->_packet_write_ready = eventProcessor.schedule_imm(this, ET_CALL, QUIC_EVENT_PACKET_WRITE_READY, nullptr);
+    this->_packet_write_ready = this_ethread()->schedule_imm(this, QUIC_EVENT_PACKET_WRITE_READY, nullptr);
   }
 }
 
