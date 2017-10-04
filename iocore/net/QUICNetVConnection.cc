@@ -413,6 +413,7 @@ QUICNetVConnection::state_handshake(int event, Event *data)
     if (this->_packet_write_ready == data) {
       this->_packet_write_ready = nullptr;
     }
+    SCOPED_MUTEX_LOCK(frame_transmitter_lock, this->_frame_transmitter_mutex, this_ethread());
     DebugQUICCon("_frame_send_queue.size(): %ld", _frame_send_queue.size());
     ink_release_assert(this->_frame_send_queue.back().get() != nullptr);
     ink_release_assert(this->_frame_send_queue.front().get() != nullptr);
