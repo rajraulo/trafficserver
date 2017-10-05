@@ -144,6 +144,7 @@ class QUICNetVConnection : public UnixNetVConnection, public QUICConnection
 
 public:
   QUICNetVConnection();
+  ~QUICNetVConnection() { Debug("bcall", "destructor"); }
 
   void init(UDPConnection *, QUICPacketHandler *);
 
