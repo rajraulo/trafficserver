@@ -55,6 +55,7 @@ ClassAllocator<QUICNetVConnection> quicNetVCAllocator("quicNetVCAllocator");
 QUICNetVConnection::QUICNetVConnection() : UnixNetVConnection()
 {
   SET_HANDLER((NetVConnHandler)&QUICNetVConnection::state_pre_handshake);
+  Debug("quic", "constructor");
 }
 
 // XXX This might be called on ET_UDP thread
