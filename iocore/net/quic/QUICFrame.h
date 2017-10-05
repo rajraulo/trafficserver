@@ -26,6 +26,7 @@
 #include <memory>
 #include "ts/List.h"
 #include <vector>
+#include <array>
 #include <iterator>
 
 #include "QUICTypes.h"
@@ -652,5 +653,5 @@ public:
 
 private:
   // FIXME Actual number of frame types is several but some of the values are not sequential.
-  std::shared_ptr<QUICFrame> _reusable_frames[256] = {nullptr};
+  std::array<std::shared_ptr<QUICFrame>, 256> _reusable_frames;
 };
