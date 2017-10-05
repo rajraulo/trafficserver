@@ -651,6 +651,14 @@ public:
   static std::unique_ptr<QUICRetransmissionFrame, QUICFrameDeleterFunc> create_retransmission_frame(
     QUICFrameUPtr original_frame, const QUICPacket &original_packet);
 
+  ~QUICFrameFactory() {
+    for (auto x: _reusable_frames) {
+      if (x.get() != nullptr) {
+        x.reset();
+      }
+    }
+  }
+
 private:
   // FIXME Actual number of frame types is several but some of the values are not sequential.
   std::array<std::shared_ptr<QUICFrame>, 256> _reusable_frames;
