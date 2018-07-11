@@ -679,6 +679,7 @@ void
 Http2Stream::send_response_body(bool call_update)
 {
   Http2ClientSession *parent = static_cast<Http2ClientSession *>(this->get_parent());
+  inactive_timeout_at = Thread::get_hrtime() + inactive_timeout;
 
   if (Http2::stream_priority_enabled) {
     SCOPED_MUTEX_LOCK(lock, parent->connection_state.mutex, this_ethread());
@@ -690,7 +691,6 @@ Http2Stream::send_response_body(bool call_update)
     parent->connection_state.send_data_frames(this);
     this->signal_write_event(call_update);
   }
-  inactive_timeout_at = Thread::get_hrtime() + inactive_timeout;
 }
 
 void
