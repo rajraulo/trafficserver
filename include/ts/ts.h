@@ -35,6 +35,16 @@
 extern "C" {
 #endif /* __cplusplus */
 
+// ATS 8.x compatiblity layer
+extern TSSslConnection TSHttpSsnSSLConnectionGet(TSHttpSsn x);
+
+extern TSReturnCode TSHttpArgIndexReserve(const char *name, const char *description, int *arg_idx);
+
+extern TSReturnCode TSHttpArgIndexNameLookup(const char *name, int *arg_idx, const char **description);
+
+extern void TSHttpTxnSetHttpRetStatus(TSHttpTxn txnp, TSHttpStatus http_retstatus);
+// end ATS 8.x compatiblity layer
+
 /* --------------------------------------------------------------------------
    Memory */
 #define TSmalloc(s) _TSmalloc((s), TS_RES_MEM_PATH)
