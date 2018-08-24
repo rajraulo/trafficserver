@@ -9609,3 +9609,22 @@ TSHttpTxnPostBufferReaderGet(TSHttpTxn txnp)
   HttpSM *sm = (HttpSM *)txnp;
   return (TSIOBufferReader)sm->get_postbuf_clone_reader();
 }
+
+// ATS 8.x compatiblity layer
+TSSslConnection TSHttpSsnSSLConnectionGet(TSHttpSsn x) {
+  return TSVConnSSLConnectionGet(TSHttpSsnClientVConnGet(x));
+}
+
+TSReturnCode TSHttpArgIndexReserve(const char *name, const char *description, int *arg_idx) {
+  return TSHttpTxnArgIndexReserve(name, description, arg_idx);
+}
+
+TSReturnCode TSHttpArgIndexNameLookup(const char *name, int *arg_idx, const char **description) {
+  return TSHttpTxnArgIndexNameLookup(name, arg_idx, description);
+}
+
+void TSHttpTxnSetHttpRetStatus(TSHttpTxn txnp, TSHttpStatus http_retstatus) {
+  TSHttpTxnStatusSet(txnp, http_retstatus);
+}
+
+// end ATS 8.x compatiblity layer
