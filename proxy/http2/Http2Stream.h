@@ -181,6 +181,7 @@ public:
                                       // and other fields)
   bool recv_end_stream = false;
   bool send_end_stream = false;
+  bool recv_rst_stream = false;
 
   bool sent_request_header       = false;
   bool response_header_done      = false;

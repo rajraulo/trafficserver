@@ -229,6 +229,19 @@ rcv_headers_frame(Http2ConnectionState &cstate, const Http2Frame &frame)
     }
   }
 
+  // [RFC 7540] 5.1 Stream States
+  // An endpoint MUST NOT send frames other than PRIORITY on a closed stream.
+  // An endpoint that receives any frame other than PRIORITY
+  // after receiving a RST_STREAM MUST treat that as a stream error.
+  if (stream->get_state() == Http2StreamState::HTTP2_STREAM_STATE_CLOSED) {
+    if (stream->recv_rst_stream == true) {
+      return Http2Error(Http2ErrorClass::HTTP2_ERROR_CLASS_STREAM, Http2ErrorCode::HTTP2_ERROR_STREAM_CLOSED,
+                        "recv headers stream closed");
+    } else {
+      return Http2Error(Http2ErrorClass::HTTP2_ERROR_CLASS_NONE);
+    }
+  }
+
   // keep track of how many bytes we get in the frame
   stream->request_header_length += payload_length;
   if (stream->request_header_length > Http2::max_request_header_size) {
@@ -480,6 +493,7 @@ rcv_rst_stream_frame(Http2ConnectionState &cstate, const Http2Frame &frame)
     Http2StreamDebug(cstate.ua_session, stream_id, "RST_STREAM: Error Code: %u", rst_stream.error_code);
 
     stream->set_rx_error_code({ProxyErrorClass::TXN, static_cast<uint32_t>(rst_stream.error_code)});
+    stream->recv_rst_stream = true;
     cstate.delete_stream(stream);
   }
 
