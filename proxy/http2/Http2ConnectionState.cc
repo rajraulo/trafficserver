@@ -799,9 +799,11 @@ rcv_continuation_frame(Http2ConnectionState &cstate, const Http2Frame &frame)
   // after receiving a RST_STREAM MUST treat that as a stream error.
   if (stream->get_state() == Http2StreamState::HTTP2_STREAM_STATE_CLOSED) {
     if (stream->recv_rst_stream == true) {
+      Error("bcall - received HEADERS frame on closed stream after receiving a RST_STREAM from the client");
       return Http2Error(Http2ErrorClass::HTTP2_ERROR_CLASS_STREAM, Http2ErrorCode::HTTP2_ERROR_STREAM_CLOSED,
                         "recv headers stream closed");
     } else {
+      Error("bcall - received HEADERS frame on closed stream");
       return Http2Error(Http2ErrorClass::HTTP2_ERROR_CLASS_NONE);
     }
   }
