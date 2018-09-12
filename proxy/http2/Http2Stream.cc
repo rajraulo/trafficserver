@@ -175,6 +175,8 @@ Http2Stream::send_request(Http2ConnectionState &cstate)
 bool
 Http2Stream::change_state(uint8_t type, uint8_t flags)
 {
+  Http2StreamState current_state = _state;
+
   switch (_state) {
   case Http2StreamState::HTTP2_STREAM_STATE_IDLE:
     if (type == HTTP2_FRAME_TYPE_HEADERS) {
@@ -266,6 +268,7 @@ Http2Stream::change_state(uint8_t type, uint8_t flags)
     return false;
   }
 
+  last_state = current_state;
   Http2StreamDebug("%s", Http2DebugNames::get_state_name(_state));
 
   return true;
@@ -388,6 +391,8 @@ Http2Stream::initiating_close()
   if (!closed) {
     SCOPED_MUTEX_LOCK(lock, this->mutex, this_ethread());
     Http2StreamDebug("initiating_close");
+
+    called_initiating_close_while_open = true;
 
     // Set the state of the connection to closed
     // TODO - these states should be combined
