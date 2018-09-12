@@ -803,7 +803,8 @@ rcv_continuation_frame(Http2ConnectionState &cstate, const Http2Frame &frame)
       return Http2Error(Http2ErrorClass::HTTP2_ERROR_CLASS_STREAM, Http2ErrorCode::HTTP2_ERROR_STREAM_CLOSED,
                         "recv headers stream closed");
     } else {
-      Error("bcall - received HEADERS frame on closed stream");
+      Error("bcall - received HEADERS frame on closed stream %d %d %d %d %d", stream->recv_rst_stream, stream->send_rst_stream,
+            (int)stream->last_state, stream->has_trailing_header(), stream->called_initiating_close_while_open);
       return Http2Error(Http2ErrorClass::HTTP2_ERROR_CLASS_NONE);
     }
   }
@@ -1203,6 +1204,8 @@ Http2ConnectionState::delete_stream(Http2Stream *stream)
   if (!stream_list.in(stream)) {
     return false;
   }
+
+  stream->called_delete_stream = true;
 
   Http2StreamDebug(ua_session, stream->get_id(), "Delete stream");
 
@@ -1692,6 +1695,8 @@ Http2ConnectionState::send_rst_stream_frame(Http2StreamId id, Http2ErrorCode ec)
   // change state to closed
   Http2Stream *stream = find_stream(id);
   if (stream != nullptr) {
+    stream->send_rst_stream = true;
+
     stream->set_tx_error_code({ProxyErrorClass::TXN, static_cast<uint32_t>(ec)});
     if (!stream->change_state(HTTP2_FRAME_TYPE_RST_STREAM, 0)) {
       this->send_goaway_frame(this->latest_streamid_in, Http2ErrorCode::HTTP2_ERROR_PROTOCOL_ERROR);

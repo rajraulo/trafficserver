@@ -57,6 +57,12 @@ public:
     // FIXME: Are you sure? every "stream" needs request_header?
     _req_header.create(HTTP_TYPE_REQUEST);
     response_header.create(HTTP_TYPE_RESPONSE);
+
+    recv_rst_stream                    = false;
+    send_rst_stream                    = false;
+    called_initiating_close_while_open = false;
+    called_delete_stream               = false;
+    last_state                         = Http2StreamState::HTTP2_STREAM_STATE_IDLE;
   }
 
   ~Http2Stream() { this->destroy(); }
@@ -179,9 +185,13 @@ public:
                                       // Padding or other fields)
   uint32_t request_header_length = 0; // total length of payload (include Padding
                                       // and other fields)
-  bool recv_end_stream = false;
-  bool send_end_stream = false;
-  bool recv_rst_stream = false;
+  bool recv_end_stream                    = false;
+  bool send_end_stream                    = false;
+  bool recv_rst_stream                    = false;
+  bool send_rst_stream                    = false;
+  bool called_initiating_close_while_open = false;
+  bool called_delete_stream               = false;
+  Http2StreamState last_state             = Http2StreamState::HTTP2_STREAM_STATE_IDLE;
 
   bool sent_request_header       = false;
   bool response_header_done      = false;
