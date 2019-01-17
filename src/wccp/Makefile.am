@@ -32,7 +32,6 @@ noinst_LIBRARIES = libwccp.a
 # noinst_PROGRAMS = test-cache
 
 libwccp_a_SOURCES = \
-	Wccp.h \
 	WccpConfig.cc \
 	WccpEndPoint.cc \
 	WccpLocal.h \
@@ -41,3 +40,5 @@ libwccp_a_SOURCES = \
 	WccpStatic.cc \
 	WccpUtil.h
 
+clang-tidy-local: $(DIST_SOURCES)
+	$(CXX_Clang_Tidy)
