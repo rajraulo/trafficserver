@@ -340,8 +340,9 @@ SocksProxy::state_read_socks4_client_request(int event, void *data)
   unsigned char *p = (unsigned char *)reader->start();
   int i;
   // Skip UserID
-  for (i = 8; i < n && p[i] != 0; i++)
+  for (i = 8; i < n && p[i] != 0; i++) {
     ;
+  }
 
   if (p[i] == 0) {
     port                      = p[2] * 256 + p[3];
